@@ -11,12 +11,30 @@ import ru.test.model.User;
 import ru.test.service.UserService;
 
 @Controller
-@RequestMapping("/edit")
-public class EditUserController {
+public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
+    @GetMapping(value = "/")
+    public String getUsersPage(ModelMap model) {
+        model.addAttribute("users", userService.getAllUsers());
+        return "users-page";
+    }
+
+    @GetMapping(value = "/new")
+    public String getForm() {
+        return "users-form";
+    }
+
+    @PostMapping(value = "/new")
+    public String addNewUser(@RequestParam(value = "login") String login,
+                             @RequestParam(value = "password") String password,
+                             @RequestParam(value = "email") String email) {
+        userService.addUser(new User(login, password, email));
+        return "redirect:/";
+    }
+
+    @GetMapping("/edit")
     public String editPage(@RequestParam(value = "id") String id, ModelMap model) {
         Long userId = Long.parseLong(id);
         User user = userService.getUserById(userId);
@@ -24,12 +42,19 @@ public class EditUserController {
         return "edit-page";
     }
 
-    @PostMapping
+    @PostMapping("/edit")
     public String editUser(@RequestParam(value = "id") String id,
                            @RequestParam(value = "login") String login,
                            @RequestParam(value = "password") String password,
                            @RequestParam(value = "email") String email) {
         userService.updateUser(new User(Long.parseLong(id), login, password, email));
+        return "redirect:/";
+    }
+
+    @GetMapping("/delete")
+    public String deleteUser(@RequestParam(value = "id") String id) {
+        Long userId = Long.parseLong(id);
+        userService.deleteUser(userId);
         return "redirect:/";
     }
 }
